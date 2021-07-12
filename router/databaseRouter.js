@@ -31,11 +31,11 @@ const omitPassword = (obj) => {
 };
 
 export default () => {
-  app.get('/', (req, res) => {
+  router.get('/', (req, res) => {
     return res.send(database.users.map((user) => omitPassword(user)));
   });
 
-  app.get('/profile/:id', (req, res) => {
+  router.get('/profile/:id', (req, res) => {
     const { id } = req.params;
 
     database.users.forEach((user) => {
@@ -47,18 +47,18 @@ export default () => {
     return res.status(400).json('no such user');
   });
 
-  app.post('/signin', (req, res) => {
+  router.post('/signin', (req, res) => {
     const { email, password } = req.body;
 
     const user = database.users[0];
     if (email === user.email && password === user.password) {
-      return res.json('success');
+      return res.json(omitPassword(user));
     }
 
     return res.status(400).json('error logging in');
   });
 
-  app.post('/register', (req, res) => {
+  router.post('/register', (req, res) => {
     const { name, email, password } = req.body;
 
     database.users.push({
@@ -73,15 +73,15 @@ export default () => {
     return res.json(omitPassword(database.users[database.users.length - 1]));
   });
 
-  app.put('/image', (req, res) => {
+  router.put('/image', (req, res) => {
     const { id } = req.body;
 
-    database.users.forEach((user) => {
+    for (const user of database.users) {
       if (user.id === id) {
         user.entries += 1;
         return res.json(user.entries);
       }
-    });
+    }
 
     return res.status(400).json('no such user');
   });
