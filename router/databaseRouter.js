@@ -1,6 +1,7 @@
 'use strict';
 
 import express from 'express';
+import _ from 'lodash';
 
 const router = express.Router();
 
@@ -25,24 +26,28 @@ const database = {
   ],
 };
 
+const omitPassword = (obj) => {
+  return _.omit(obj, ['password']);
+};
+
 export default () => {
-  router.get('/', (req, res) => {
-    return res.send(database.users);
+  app.get('/', (req, res) => {
+    return res.send(database.users.map((user) => omitPassword(user)));
   });
 
-  router.get('/profile/:id', (req, res) => {
+  app.get('/profile/:id', (req, res) => {
     const { id } = req.params;
 
     database.users.forEach((user) => {
       if (user.id === id) {
-        return res.json(user);
+        return res.json(omitPassword(user));
       }
     });
 
     return res.status(400).json('no such user');
   });
 
-  router.post('/signin', (req, res) => {
+  app.post('/signin', (req, res) => {
     const { email, password } = req.body;
 
     const user = database.users[0];
@@ -53,7 +58,7 @@ export default () => {
     return res.status(400).json('error logging in');
   });
 
-  router.post('/register', (req, res) => {
+  app.post('/register', (req, res) => {
     const { name, email, password } = req.body;
 
     database.users.push({
@@ -65,10 +70,10 @@ export default () => {
       joined: new Date(),
     });
 
-    return res.json(database.users[database.users.length - 1]);
+    return res.json(omitPassword(database.users[database.users.length - 1]));
   });
 
-  router.put('/image', (req, res) => {
+  app.put('/image', (req, res) => {
     const { id } = req.body;
 
     database.users.forEach((user) => {
