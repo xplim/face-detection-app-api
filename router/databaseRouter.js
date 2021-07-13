@@ -2,8 +2,19 @@
 
 import express from 'express';
 import _ from 'lodash';
+import knex from 'knex';
 
 const router = express.Router();
+
+const db = knex({
+  client: 'pg',
+  connection: {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  },
+});
 
 const database = {
   users: [
@@ -61,16 +72,20 @@ export default () => {
   router.post('/register', (req, res) => {
     const { name, email, password } = req.body;
 
-    database.users.push({
-      id: '125',
-      name,
-      email,
-      password,
-      entries: 0,
-      joined: new Date(),
-    });
-
-    return res.json(omitPassword(database.users[database.users.length - 1]));
+    db('users')
+      .returning('*')
+      .insert({
+        name,
+        email,
+        joined: new Date(),
+      })
+      .then((response) => {
+        return res.json(response[0]);
+      })
+      .catch((err) => {
+        console.error(err);
+        return res.status(400).json('error in registration');
+      });
   });
 
   router.put('/image', (req, res) => {
