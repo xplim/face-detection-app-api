@@ -1,7 +1,6 @@
 'use strict';
 
 import express from 'express';
-import _ from 'lodash';
 import bcrypt from 'bcrypt';
 import knex from 'knex';
 
@@ -17,41 +16,12 @@ const db = knex({
   },
 });
 
-const database = {
-  users: [
-    {
-      id: '123',
-      name: 'John',
-      email: 'john@example.com',
-      password: 'apple',
-      entries: 0,
-      joined: new Date(),
-    },
-    {
-      id: '124',
-      name: 'Sally',
-      email: 'sally@example.com',
-      password: 'orange',
-      entries: 0,
-      joined: new Date(),
-    },
-  ],
-};
-
-const omitPassword = (obj) => {
-  return _.omit(obj, ['password']);
-};
-
 const handleError = (res, err, errMessage) => {
   console.error(err);
   return res.status(400).json(errMessage);
 };
 
 export default () => {
-  router.get('/', (req, res) => {
-    return res.send(database.users.map((user) => omitPassword(user)));
-  });
-
   router.get('/profile/:id', (req, res) => {
     const { id } = req.params;
 
