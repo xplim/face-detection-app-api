@@ -49,6 +49,10 @@ export default () => {
     try {
       const { email, password } = req.body;
 
+      if (!email || !password) {
+        throw new Error('incorrect sign in form submission');
+      }
+
       const loginEntries = await db
         .select('email', 'hash')
         .from('login')
@@ -94,6 +98,10 @@ export default () => {
 
     try {
       const { name, email, password } = req.body;
+
+      if (!name || !email || !password) {
+        throw new Error('incorrect registration form submission');
+      }
 
       await bcrypt.hash(password, saltRounds, async (err, hash) => {
         try {
