@@ -5,11 +5,11 @@ import express from 'express';
 import clarifaiRouter from './clarifaiRouter';
 import databaseRouter from './databaseRouter';
 
-const router = express.Router();
+const routers = express.Router();
 
 export default () => {
-  router.use('/', databaseRouter());
-  router.use('/clarifai', clarifaiRouter());
+  routers.use('/', databaseRouter());
+  routers.use('/clarifai', clarifaiRouter());
 
-  return router;
+  return routers;
 };
