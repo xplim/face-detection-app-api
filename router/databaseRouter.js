@@ -49,13 +49,20 @@ export default () => {
   router.get('/profile/:id', (req, res) => {
     const { id } = req.params;
 
-    database.users.forEach((user) => {
-      if (user.id === id) {
-        return res.json(omitPassword(user));
-      }
-    });
+    db.select('*')
+      .from('users')
+      .where('id', id)
+      .then((users) => {
+        if (users.length) {
+          return res.json(users[0]);
+        }
 
-    return res.status(400).json('no such user');
+        return res.status(400).json('user not found');
+      })
+      .catch((err) => {
+        console.error(err);
+        return res.status(400).json('error getting user');
+      });
   });
 
   router.post('/signin', (req, res) => {
