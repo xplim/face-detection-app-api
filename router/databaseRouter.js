@@ -98,14 +98,17 @@ export default () => {
   router.put('/image', (req, res) => {
     const { id } = req.body;
 
-    for (const user of database.users) {
-      if (user.id === id) {
-        user.entries += 1;
-        return res.json(user.entries);
-      }
-    }
-
-    return res.status(400).json('no such user');
+    db('users')
+      .where('id', '=', id)
+      .increment('entries', 1)
+      .returning('entries')
+      .then((entriesArray) => {
+        return res.json(entriesArray[0]);
+      })
+      .catch((err) => {
+        console.error(err);
+        return res.status(400).json('unable to get entries');
+      });
   });
 
   return router;
