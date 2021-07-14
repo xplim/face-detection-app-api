@@ -2,6 +2,7 @@
 
 import express from 'express';
 import _ from 'lodash';
+import bcrypt from 'bcrypt';
 import knex from 'knex';
 
 const router = express.Router();
@@ -41,6 +42,11 @@ const omitPassword = (obj) => {
   return _.omit(obj, ['password']);
 };
 
+const handleError = (res, err, errMessage) => {
+  console.error(err);
+  return res.status(400).json(errMessage);
+};
+
 export default () => {
   router.get('/', (req, res) => {
     return res.send(database.users.map((user) => omitPassword(user)));
@@ -65,34 +71,88 @@ export default () => {
       });
   });
 
-  router.post('/signin', (req, res) => {
-    const { email, password } = req.body;
+  router.post('/signin', async (req, res) => {
+    const handleErrorForSignIn = (err) => {
+      return handleError(res, err, 'invalid combination of email and password');
+    };
 
-    const user = database.users[0];
-    if (email === user.email && password === user.password) {
-      return res.json(omitPassword(user));
+    try {
+      const { email, password } = req.body;
+
+      const loginEntries = await db
+        .select('email', 'hash')
+        .from('login')
+        .where('email', email);
+
+      if (loginEntries.length) {
+        const hash = loginEntries[0].hash;
+        await bcrypt.compare(password, hash, async (err, isValid) => {
+          try {
+            if (err) {
+              throw new Error(err);
+            }
+
+            if (isValid) {
+              const users = await db
+                .select('*')
+                .from('users')
+                .where('email', email);
+              if (users.length) {
+                return res.json(users[0]);
+              }
+            }
+
+            throw new Error('incorrect password');
+          } catch (err) {
+            return handleErrorForSignIn(err);
+          }
+        });
+      } else {
+        throw new Error('unable to get user');
+      }
+    } catch (err) {
+      return handleErrorForSignIn(err);
     }
-
-    return res.status(400).json('error logging in');
   });
 
-  router.post('/register', (req, res) => {
-    const { name, email, password } = req.body;
+  router.post('/register', async (req, res) => {
+    const saltRounds = 10;
 
-    db('users')
-      .returning('*')
-      .insert({
-        name,
-        email,
-        joined: new Date(),
-      })
-      .then((response) => {
-        return res.json(response[0]);
-      })
-      .catch((err) => {
-        console.error(err);
-        return res.status(400).json('error in registration');
+    const handleErrorForRegistration = (err) => {
+      return handleError(res, err, 'error in registration');
+    };
+
+    try {
+      const { name, email, password } = req.body;
+
+      await bcrypt.hash(password, saltRounds, async (err, hash) => {
+        try {
+          await db.transaction(async (trx) => {
+            await db('login')
+              .insert({
+                hash,
+                email,
+              })
+              .transacting(trx);
+
+            const users = await db('users')
+              .insert({
+                name,
+                email,
+                joined: new Date(),
+              })
+              .returning('*')
+              .transacting(trx);
+
+            return res.json(users[0]);
+          });
+        } catch (err) {
+          return handleErrorForRegistration(err);
+        }
       });
+    } catch (err) {
+      return handleErrorForRegistration(err);
+    }
   });
 
   router.put('/image', (req, res) => {
