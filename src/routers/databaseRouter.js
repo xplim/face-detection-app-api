@@ -11,6 +11,11 @@ import signIn from '../controllers/signIn';
 
 const router = express.Router();
 
+// FIXME: Implement a proper solution for server-database connection issue.
+// Work around connection issue between this server and the database
+// server by disabling Node's rejection of unauthorized certificate.
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+
 const db = knex({
   client: 'pg',
   connection: dbConnectionOptions,
