@@ -5,8 +5,9 @@ import bcrypt from 'bcrypt';
 const saltRounds = 10;
 
 const handleError = (err, res, next) => {
-  res.locals.message = 'Unable to register.';
-  return next(err);
+  console.error(err);
+  res.status(400);
+  return next(new Error('Unable to register.'));
 };
 
 export default async (db, req, res, next) => {

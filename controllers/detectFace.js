@@ -15,7 +15,8 @@ export default async (clarifaiApp, req, res, next) => {
 
     return res.json(clarifaiResponse);
   } catch (err) {
-    res.locals.message = 'Unable to work with API.';
-    return next(err);
+    console.error(err);
+    res.status(400);
+    return next(new Error('Unable to work with API.'));
   }
 };

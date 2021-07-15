@@ -3,8 +3,9 @@
 import bcrypt from 'bcrypt';
 
 const handleError = (err, res, next) => {
-  res.locals.message = 'Invalid combination of email and password.';
-  return next(err);
+  console.error(err);
+  res.status(400);
+  return next(new Error('Invalid email and password combination.'));
 };
 
 export default async (db, req, res, next) => {

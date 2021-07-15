@@ -16,14 +16,15 @@ app.use('/', routers());
 
 // Error handling function.
 app.use((err, req, res, next) => {
-  console.error('GENERIC:', res.locals.message);
-  console.error('ACTUAL:', err);
+  console.error(err);
 
-  if (res.locals.message) {
-    return res.status(400).json(res.locals.message);
-  } else {
-    return res.sendStatus(500);
+  if (res.statusCode) {
+    return res.status(res.statusCode).json({
+      message: err.message,
+    });
   }
+
+  return res.sendStatus(500);
 });
 
 app.listen(PORT, () => {
