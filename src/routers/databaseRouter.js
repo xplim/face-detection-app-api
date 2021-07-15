@@ -3,6 +3,7 @@
 import express from 'express';
 import knex from 'knex';
 
+import { dbConnectionOptions } from '../config';
 import getProfile from '../controllers/getProfile';
 import incrementEntries from '../controllers/incrementEntries';
 import register from '../controllers/register';
@@ -12,12 +13,7 @@ const router = express.Router();
 
 const db = knex({
   client: 'pg',
-  connection: {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-  },
+  connection: dbConnectionOptions,
 });
 
 export default () => {
