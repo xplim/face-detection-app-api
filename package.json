@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --require dotenv/config server.js --exec babel-node server.js"
+    "dev": "NODE_ENV=development nodemon --require dotenv/config server.js --exec babel-node server.js"
   },
   "keywords": [],
   "author": "",

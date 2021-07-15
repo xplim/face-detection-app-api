@@ -3,13 +3,14 @@
 import cors from 'cors';
 import express from 'express';
 
+import { corsOptions } from './config';
 import routers from './routers';
 
 const PORT = process.env.PORT ?? 4000;
 
 const app = express();
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/', routers());
 
@@ -17,7 +18,12 @@ app.use('/', routers());
 app.use((err, req, res, next) => {
   console.error('GENERIC:', res.locals.message);
   console.error('ACTUAL:', err);
-  return res.status(400).json(res.locals.message);
+
+  if (res.locals.message) {
+    return res.status(400).json(res.locals.message);
+  } else {
+    return res.sendStatus(500);
+  }
 });
 
 app.listen(PORT, () => {
