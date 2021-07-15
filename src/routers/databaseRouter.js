@@ -16,6 +16,15 @@ const db = knex({
   connection: dbConnectionOptions,
 });
 
+// Smoke test.
+db.raw('SELECT 1')
+  .then(() => {
+    console.log('Connection to database SUCCESSFUL.');
+  })
+  .catch((err) => {
+    console.error('Connection to database FAILED.');
+  });
+
 export default () => {
   router.get('/profile/:id', async (req, res, next) => {
     await getProfile(db, req, res, next);
